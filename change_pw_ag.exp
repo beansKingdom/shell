@@ -1,0 +1,29 @@
+#!/usr/bin/expect  
+ 
+ if { [llength $argv] < 2} {  
+     puts "Usage:"  
+     puts "$argv0 user port"  
+     exit 1  
+ }  
+ 
+ set user [lindex $argv 0] 
+ set port [lindex $argv 1]
+ set passwd "action" 
+  
+ spawn mysql -u $user -p -P$port -S /tmp/mysql_${port}.sock
+    
+  expect {  
+    "Enter password:*" {
+         send "$passwd\r"
+         exp_continue
+         } 
+    "mysql>" {
+         send "show databases;\r"
+         send "SET PASSWORD = PASSWORD('action');\r"
+         send "CREATE USER 'action'@'%' IDENTIFIED BY 'action';\r"
+         send "grant all privileges on *.* to 'action'@'%' with grant option;\r"
+         send "exit\r"
+         exp_continue
+         exit
+        }
+ }

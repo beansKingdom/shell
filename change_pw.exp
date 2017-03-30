@@ -1,0 +1,27 @@
+#!/usr/bin/expect  
+   
+ if { [llength $argv] < 2} {  
+     puts "Usage:"  
+     puts "$argv0 user port"  
+     exit 1  
+ }  
+ 
+ set user [lindex $argv 0] 
+ set port [lindex $argv 1]
+ set passwd "xxx"  
+  
+ spawn mysql -u $user -p  -P $port -S /tmp/mysql_${port}.sock
+   
+ expect {  
+    "Enter password:*" {
+         send "$passwd\r"
+     exp_continue
+         } 
+    "mysql>" {
+         send "update mysql.user set authentication_string=password('action') where user='root' and Host='localhost';\r"
+         send "update mysql.user set password_expired='N' where user='root';\r"
+         send "flush privileges;\r"
+         send "exit\r"
+         exp_continue
+         exit }
+ }
