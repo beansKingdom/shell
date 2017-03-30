@@ -1,8 +1,8 @@
 ﻿#!/bin/bash
 
 usage() {
-  echo "Usage: $0 port mysql_install_dir mysql_package_name"
-  echo "example: $0 3306 /data/helingyun/mysql/mysql3306 mysql-5.6.23.tar.gz" && exit 1
+  echo "Usage: $0 port mysql_install_dir mysql_package_dir"
+  echo "example: $0 3306 /data/mysql3306 /home/mysql-5.7.11-linux-glibc2.5-x86_64" && exit 1
 }
 
 check_user_privilege() {
@@ -77,18 +77,18 @@ check_mysql_group_and_user() {
   test $? != 0 && useradd -r -g mysql  mysql 
 }
 
-install_mysql() {
+install_5_7_mysql() {
   mkdir mysql-files
   mkdir ${DIR}/data
   chmod 750 mysql-files
   chown -R mysql .
   chgrp -R mysql .
   id=`date +%s`
-  sed -i "s:server_id                      = .*:server_id                      = ${id}:g" my.cnf
-  sed -i "s:port                           = .*:port                           = ${port}:g" my.cnf
-  sed -i "s:basedir                        = .*:basedir                        = ${DIR}:g" my.cnf
-  sed -i "s:datadir                        = .*:datadir                        = ${DIR}/data:g" my.cnf
-  sed -i "s:socket                         = .*:socket                         = /tmp/mysql_${port}.sock:g" my.cnf
+  sed -i "s:server_id.*=.*:server_id                      = ${id}:g" my.cnf
+  sed -i "s:port.*=.*:port                           = ${port}:g" my.cnf
+  sed -i "s:basedir.*=.*:basedir                        = ${DIR}:g" my.cnf
+  sed -i "s:datadir.*=.*:datadir                        = ${DIR}/data:g" my.cnf
+  sed -i "s:socket.*=.*:socket                         = /tmp/mysql_${port}.sock:g" my.cnf
   #sed -i "s///g" my.cnf
   bin/mysqld --initialize --basedir=${DIR} --datadir=${DIR}/data --innodb-data-file-path=ibdata1:256M:autoextend --user=mysql >> ${scriptsdir}/install_mysql.log 2>&1
   sleep 5s

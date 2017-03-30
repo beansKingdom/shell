@@ -3,17 +3,15 @@
 scriptsdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . ./auto_mysql_func.sh
 
-
 if [[ $1 == "" ]] || [[ $2 == "" ]] || [[ $3 == "" ]];then
   usage
 fi
 
 port=$1
 DIR=$2
-package_name=$3
+package_dir=$3
 user='action'
 passwd='action'
-mysql_dir='/home/helingyun/mysql/mysql-5.7.11-linux-glibc2.5-x86_64'
 
 echo "install start...####################################################################################" > ${scriptsdir}/install_mysql.log 2>&1
 ###check_relay_software
@@ -28,11 +26,14 @@ check_mysql_group_and_user
 
 #cp_mysql_file
 cd ${DIR}
-cp -r ${mysql_dir}/* ${DIR} 2>> ${DIR}/install_mysql.log 
-test $? != 0 && echo "cp ${mysql_dir} to ${DIR} failed, see ${scriptsdir}/install_mysql.log for more details" && exit 1
+cp -r ${package_dir}/* ${DIR} 2>> ${scriptsdir}/install_mysql.log 
+test ! -e my.cnf && echo "${DIR}/my.cnf is not exist, exit..." && exit 1
+echo "skip-grant-tables" >> ${DIR}/my.cnf
+
+test $? != 0 && echo "cp ${package_dir} to ${DIR} failed, see ${scriptsdir}/install_mysql.log for more details" && exit 1
 
 #start install mysql
-install_mysql
+install_5_7_mysql 
 
 #check mysql start status
 check_mysql_status
