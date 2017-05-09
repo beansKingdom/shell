@@ -3,33 +3,7 @@
 #get cpu/mem/io by pid (net??)
 #################################################
 
-######collect prepare
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-Usage() {
-  echo "Usage :$0 pid count_num interval_time(default 3)"
-  echo "example $0 3306 150 1"
-  exit  
-}
-
-if [[  $# < 2 ]];then
-  Usage
-fi
-
-pid=$1
-number=$2
-if [[ $3 == '' ]];then 
-  interval_time=3
-else 
-  interval_time=$3
-fi
-
-#get_process_name
-p_name=`cat /proc/${pid}/status | grep Name | awk '{print $2}'`
-test $? != 0 && exit 1
-
-echo '' > ${script_dir}/${p_name}_io.log
-echo '' > ${script_dir}/${p_name}_cpu.log
-echo '' > ${script_dir}/${p_name}_mem.log
 
 ####function_code
 ## 1:red hat 2:ubtun 3:suse
@@ -79,11 +53,11 @@ get_io_data() {
   return 0
 }
 
-check_server_version
-is_install_check "iotop" "sysstat"
-
-#echo "`date` begin to collect data--------------------------------" | tee "${script_dir}/date.log"
-#printf "%-10s\t%-10s\t%-10s\t%-10s\n" Time cpu mem read_io write_io >> "${script_dir}/date.log"
+Usage() {
+  echo "Usage :$0 pid count_num interval_time"
+  echo "example $0 3306 150 1"
+  exit  
+}
 
 main() { 
   get_io 
@@ -91,4 +65,30 @@ main() {
   get_mem
 }
 
+check_input() {
+  if [[ $2 =~ ^[1-9][0-9]{0,}$ ]] && [[ $1 =~ ^[1-9][0-9]{0,}$ ]] && [[ $3 =~ ^[1-9][0-9]{0,}$ ]];then
+    pid=$1 && number=$2 && interval_time=$3
+  else
+    echo "input error, pid or count_num or interval_time not a num" && exit 1
+  fi
+}
+
+if [[  $# < 3 ]];then
+  Usage
+fi
+
+check_input $1 $2 $3
+
+#get_process_name
+test ! -e /proc/${pid}/status && echo "Can't found /proc/${pid}/status: No such file or directory, exit..." && exit 1
+p_name=`cat /proc/${pid}/status | grep Name | awk '{print $2}'`
+
+echo '' > ${script_dir}/${p_name}_io.log && echo '' > ${script_dir}/${p_name}_cpu.log && echo '' > ${script_dir}/${p_name}_mem.log
+test $? != 0 && echo "clean data_file failed,please check pid value, exit..." && exit 1  
+
+check_server_version
+is_install_check "sysstat"
+
 main 
+#echo "`date` begin to collect data--------------------------------" | tee "${script_dir}/date.log"
+#printf "%-10s\t%-10s\t%-10s\t%-10s\n" Time cpu mem read_io write_io >> "${script_dir}/date.log"
