@@ -29,23 +29,21 @@ is_install_check() {
     temp_num=`$check_type | grep -w "^$i" | wc -l`
     test $temp_num = 0 && echo "Not found $i, please install it, exit..." && exit 1
   done
-  
-  echo "all tools were installed..."
 }
 
 ##get_process_mem
 get_mem() {
-  pidstat -r -p ${pid} ${interval_time} >> ${script_dir}/${p_name}_mem.log &
+  pidstat -r -p ${pid} ${interval_time} ${number} >> ${script_dir}/${p_name}_mem.log &
 }
 
 ##get_process_cpu
 get_cpu() {
-  pidstat -u -p ${pid} ${interval_time} >> ${script_dir}/${p_name}_cpu.log &
+  pidstat -u -p ${pid} ${interval_time} ${number} >> ${script_dir}/${p_name}_cpu.log &
 }
 
 ##get_process_io
 get_io() {
-  pidstat -d -p ${pid} ${interval_time} >> ${script_dir}/${p_name}_io.log &
+  pidstat -d -p ${pid} ${interval_time} ${number} >> ${script_dir}/${p_name}_io.log &
 }
 
 get_io_data() {
@@ -81,14 +79,16 @@ check_input $1 $2 $3
 
 #get_process_name
 test ! -e /proc/${pid}/status && echo "Can't found /proc/${pid}/status: No such file or directory, exit..." && exit 1
-p_name=`cat /proc/${pid}/status | grep Name | awk '{print $2}'`
+p_name=`cat /proc/${pid}/status | grep Name | awk '{print $2}'`_${pid}
 
 echo '' > ${script_dir}/${p_name}_io.log && echo '' > ${script_dir}/${p_name}_cpu.log && echo '' > ${script_dir}/${p_name}_mem.log
-test $? != 0 && echo "clean data_file failed,please check pid value, exit..." && exit 1  
+test $? != 0 && echo "clean data_file failed,please check pid value, exit..." && exit 1 
 
 check_server_version
 is_install_check "sysstat"
 
 main 
-#echo "`date` begin to collect data--------------------------------" | tee "${script_dir}/date.log"
-#printf "%-10s\t%-10s\t%-10s\t%-10s\n" Time cpu mem read_io write_io >> "${script_dir}/date.log"
+echo "`date` begin to collect data--------------------------------" 
+let sleep_time=interval_time*number
+sleep $sleep_time
+echo "`date` task finished--------------------------------" 
