@@ -76,7 +76,7 @@ check_server_version
 check_install_dep "ftp"
 
 print_split
-get_ftp_tar >> /dev/null
+get_ftp_tar 2>> /dev/null
 tar -zxvf actiontech-mycat.tar.gz >> /dev/null 2>&1
 test $? != 0 && echo "tar package failed, exit..." && exit 1
 sed -i 's/MaxDirectMemorySize=2G/MaxDirectMemorySize=10G/g' ${local_dir}/mycat/conf/wrapper.conf
