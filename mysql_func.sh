@@ -41,12 +41,15 @@ check_install_dep() {
   echo "pass"
 }
 
-check_install_dir() {
+check_mysql_dir() {
   if [[ ! -d ${mysql_install_dir} ]];then 
     sudo mkdir "${mysql_install_dir}"
   else
-    echo "${mysql_install_dir} is exist,exit..."
-    exit
+    echo "${mysql_install_dir} is exist,exit..." && exit 1
+  fi
+  
+  if [[ ! -d ${mysql_package_dir} ]];then
+    echo "Not found ${mysql_package_dir}, exit..." && exit 1
   fi
 }
 
@@ -61,10 +64,14 @@ change_mycnf() {
 #sed -i "s///g" my.cnf
 }
 
+print_split() {
+  awk 'BEGIN{for(i=0;i<100;i++) printf "="; printf "\n"}'
+}
+
 cp_mysql_file() {
   echo "cp mysql file to install dir...wait a minute"
   cd ${mysql_install_dir}
-  cp -r $mysql_package_dir/*  ${mysql_install_dir}/
+  cp -r ${mysql_package_dir}/*  ${mysql_install_dir}/
   test $? != 0 && echo "cp mysql_package to install dir failed, exit..." && exit 1
 }
 
