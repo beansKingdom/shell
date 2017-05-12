@@ -4,33 +4,9 @@
 #################################################
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. ./common_share_func.sh
 
 ####function_code
-## 1:red hat 2:ubtun 3:suse
-check_server_version() {
-  version=`cat /proc/version |awk -F "[()]" '{print $5}'`
-  if [[ $version =~ ^[Rr][Ee][Dd].* ]];then
-    version_type=1
-  elif [[ $version =~ ^[Uu][Bb][Uu].* ]];then
-    version_type=2
-  else
-    echo "ERROR not found server version..." && exit 1
-  fi
-}
-
-is_install_check() {
-  if [[ $version_type == 1 ]];then
-    check_type="rpm -qa"
-  else
-    check_type="dpkg --get-selections"
-  fi
-
-  for i in $@;do
-    temp_num=`$check_type | grep -w "^$i" | wc -l`
-    test $temp_num = 0 && echo "Not found $i, please install it, exit..." && exit 1
-  done
-}
-
 ##get_process_mem
 get_mem() {
   pidstat -r -p ${pid} ${interval_time} ${number} >> ${script_dir}/${p_name}_mem.log &
@@ -43,7 +19,7 @@ get_cpu() {
 
 ##get_process_io
 get_io() {
-  pidstat -d -p ${pid} ${interval_time} ${number} >> ${script_dir}/${p_name}_io.log &
+  pidstat -d ${interval_time} -p ${pid} ${number} >> ${script_dir}/${p_name}_io.log &
 }
 
 get_io_data() {
@@ -85,7 +61,7 @@ echo '' > ${script_dir}/${p_name}_io.log && echo '' > ${script_dir}/${p_name}_cp
 test $? != 0 && echo "clean data_file failed,please check pid value, exit..." && exit 1 
 
 check_server_version
-is_install_check "sysstat"
+is_install_check "sysstat" "iotop"
 
 main 
 echo "`date` begin to collect data--------------------------------" 

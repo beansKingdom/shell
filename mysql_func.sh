@@ -25,18 +25,6 @@ check_mysql_group_and_user() {
   test $? != 0 && useradd -r -g mysql  mysql 
 }
 
-## 1:red hat 2:ubtun 3:suse
-check_server_version() {
-  version=`cat /proc/version |awk -F "[()]" '{print $5}'`
-  if [[ $version =~ ^[Rr][Ee][Dd].* ]];then 
-    version_type=1
-  elif [[ $version =~ ^[Uu][Bb][Uu].* ]];then 
-    version_type=2
-  else 
-    echo "ERROR not found server version..." && exit 1
-  fi
-}
-
 check_install_dep() {
   echo "pass"
 }
@@ -62,10 +50,6 @@ change_mycnf() {
   sed -i "s:socket.*=.*:socket                         = /tmp/mysql_${port}.sock:g" my.cnf
   echo "skip-grant-tables" >> ${mysql_install_dir}/my.cnf
 #sed -i "s///g" my.cnf
-}
-
-print_split() {
-  awk 'BEGIN{for(i=0;i<100;i++) printf "="; printf "\n"}'
 }
 
 cp_mysql_file() {

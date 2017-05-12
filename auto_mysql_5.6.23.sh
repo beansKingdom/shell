@@ -2,6 +2,7 @@
 
 scripts_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . ./mysql_func.sh
+. ./common_share_func.sh
 
 port=$1
 mysql_install_dir=$2
