@@ -1,7 +1,7 @@
 Usage (){
   echo "input wrong..."
-  echo "Usage:./1.sh port mysql_install_dir mysql_package_dir"
-  echo "example ./sh 3317 /data/mysql1 /usr/local/hly/mysql"  
+  echo "Usage:$0 port mysql_install_dir mysql_package_dir"
+  echo "example $0 3317 /data/mysql1 /usr/local/hly/mysql"  
   exit
 }
 
