@@ -1,4 +1,6 @@
-﻿print_split() {
+#!/bin/bash
+
+print_split() {
   awk 'BEGIN{for(i=0;i<100;i++) printf "="; printf "\n"}'
 }
 

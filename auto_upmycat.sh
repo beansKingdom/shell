@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. ./common_share_func.sh
+
 ########################################################
 # Change the default config                            #
 ########################################################
@@ -16,25 +18,6 @@ local_dir="/home/helingyun"
 
 cd ${local_dir}
 test $? != 0 && echo "Not found ${local_dir}, exit..." && exit 1
-
-## 1:red hat 2:ubtun 3:suse
-check_server_version() {
-  version=`cat /proc/version |awk -F "[()]" '{print $5}'`
-  if [[ $version =~ ^[Rr][Ee][Dd].* ]];then 
-    version_type=1 && check_type="rpm -qa"
-  elif [[ $version =~ ^[Uu][Bb][Uu].* ]];then 
-    version_type=2 && check_type="dpkg --get-selections"
-  else 
-    echo "ERROR not found server version..." && exit 1
-  fi
-}
-
-check_install_dep() {
-  for i in $@;do
-    temp_num=`$check_type | grep -w "^$i" | wc -l`
-    test $temp_num = 0 && echo "Not found $i, please install it, exit..." && exit 1
-  done
-}
 
 get_mycat_version() {
   ver=`mysql -u$mycat_user -p$mycat_passwd -P$mycat_port -h $mycat_hostip -e "select version();"|grep mycat`
