@@ -1,5 +1,4 @@
 #!/bin/bash
-# the script is kill process by port
 
 if [[ $# != 1 ]];then
   echo "Usage  :$0 port"
@@ -16,9 +15,9 @@ fi
 
 
 #get the process pid
-pid=$(netstat -anp|grep ${port} | grep "sock"|awk '{print $9}' |awk -F "/" '{print $1}')
+pid=$(netstat -anp|grep ${port}| grep tcp | grep -i "listen" | awk '{print $7}' | awk -F "/" '{print $1}')
 #get the process name
-p_name=$(netstat -anp|grep ${port} | grep "sock"|awk '{print $9}' |awk -F "/" '{print $2}')
+p_name=$(netstat -anp|grep ${port}| grep tcp | grep -i "listen" | awk '{print $7}' | awk -F "/" '{print $2}')
 
 while ((1));do
   echo "Make sure to kill program ${p_name}, pid is ${pid}(y/n)"
@@ -34,3 +33,4 @@ while ((1));do
 done
 
 kill -9 ${pid}
+test $? == 0 && echo "process ${pid} is killed" 
