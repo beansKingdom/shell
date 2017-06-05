@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 . mysql_conf            # import mysql config
 
@@ -35,9 +35,9 @@ config_init() {
   fi
 # default config ##########################################
 sysbench_dir=/home/helingyun/sysbench/sysbench
-threads=(1 4 8 16 32 64 128 256 384 512 1024 1536 2048)
-#threads=(1)
-test_time=10
+#threads=(1 4 8 16 32 64 128 256 384 512 1024 1536 2048)
+threads=(1)
+test_time=30
 tb_count=1
 tb_size=100000000
 same_com="--mysql-table-engine=innodb --rand-type=uniform --mysql-user=$user --mysql-password=$passwd --max-requests=0 --oltp-tables-count=$tb_count --report-interval=1 --oltp-table-size=$tb_size --mysql-host=$host_ip --mysql-db=$dbname --mysql-port=$port "
@@ -73,7 +73,7 @@ done
 select_test() {
 echo "begin select_test"
 cd $sysbench_dir    
-# #warmup_fun $lua_script
+warmup_fun $lua_script
 
 echo "" > $s_dir/log/temp_log
 for thread in ${threads[@]};do
@@ -108,7 +108,7 @@ grep "read/write" $s_dir/log/temp_log | awk '{print $4}' |awk -F "(" '{printf "%
 update_test() {
 echo "begin update_test"
 cd $sysbench_dir    
-#warmup_fun $lua_script
+warmup_fun $lua_script
 
 echo "" > $s_dir/log/temp_log
 for thread in ${threads[@]};do
