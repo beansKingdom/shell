@@ -1,0 +1,5 @@
+#to record time and what fix
+#echo `date +%Y-%m-%d` `date +%H:%M:%S` >> record_log.txt
+
+2017-05-25 17:46:58
+  fix kill_process.sh 
