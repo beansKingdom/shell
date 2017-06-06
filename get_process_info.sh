@@ -61,7 +61,7 @@ echo '' > ${script_dir}/${p_name}_io.log && echo '' > ${script_dir}/${p_name}_cp
 test $? != 0 && echo "clean data_file failed,please check pid value, exit..." && exit 1 
 
 check_server_version
-is_install_check "sysstat" "iotop"
+is_install_check "sysstat" 
 
 main 
 echo "`date` begin to collect data--------------------------------" 
