@@ -5,8 +5,7 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ## default config 
 sysbench_dir=/home/helingyun/sysbench/sysbench
-#threads=(1 4 8 16 32 64 128 256 384 512 1024 1536 2048)
-threads=(1)
+threads=(1 4 8 16 32 64 128 256 384 512 1024 1536 2048)
 each_test_runtime=30
 table_count=1
 table_row=100000000
@@ -16,12 +15,12 @@ warm_up_thread_nums=2048
 
 Usage() {
   echo "The script is used to test mycat and mysql"
-  echo "  example $0 script.lua config_type(mysql/mycat)"
+  echo "  example $0 script.lua config_type(mysql/mycat/kingshard)"
   echo "  example $0 test.lua mysql" && exit 1
 }
 
 judge_run_test_type() {
-update_lua=('mycat_update_same.lua')
+update_lua=('mycat_update_same.lua' 'mycat_update_diff.lua')
 select_lua=('mycat_select.lua' 'mycat_select_in.lua' 'mycat_select_order.lua' 'mycat_select_between.lua' 'mycat_select_group_having.lua')
 insert_lua=('mycat_insert.lua')
 
@@ -52,25 +51,26 @@ config_init() {
   if [[ $config_type == "mysql" ]];then
     host_ip=${mysql_host_ip} && dbname=${mysql_dbname} && port=${mysql_port} && user=${mysql_user} && passwd=${mysql_passwd}
   elif [[ $config_type == "mycat" ]];then
-    host_ip=${mycat_host_ip} && dbname=${mycat_dbname} && port=${mycat_port} && user=${mycat_user} && passwd=${mycat_passwd}  
+    host_ip=${mycat_host_ip} && dbname=${mycat_dbname} && port=${mycat_port} && user=${mycat_user} && passwd=${mycat_passwd} 
+  elif [[ $config_type == "kingshard" ]];then
+    host_ip=${kingshard_host_ip} && dbname=${kingshard_dbname} && port=${kingshard_port} && user=${kingshard_user} && passwd=${kingshard_passwd}
   else 
-    echo "Error config type input, only mysql or mycat. exit..." && exit 1
+    echo "Error config type input, only mysql or mycat or kingshard, exit..." && exit 1
   fi
 }
 
 warm_up_data() {
-  echo "" > ${script_dir}/log/warmup_log
+  echo "`date +%Y-%m-%d` `date +%H:%M:%S`  start ${run_test_type} warm_up_data =====================================" > ${script_dir}/log/warmup_log
   ./sysbench --test=../db/${lua_script_name} --num-threads=${warm_up_thread_nums} ${same_command} --max-time=${warm_up_run_time} --mysql-ignore-errors=1062  run >> ${script_dir}/log/warmup_log
   sleep ${warm_up_sleep_time}
 }
 
 perform_test_prepare() {
-  echo "`date +%Y-%m-%d` `date +%H:%M:%S`  begin ${run_test_type}" | tee -a ${script_dir}/log/mycat_perform_test.log
+  echo "`date +%Y-%m-%d` `date +%H:%M:%S`  begin ${run_test_type} ${config_type}" | tee -a ${script_dir}/log/main_perform_test.log
   cd ${sysbench_dir} 
   
   if [[ ${run_test_type} != "insert_test" ]];then
-      #warm_up_data 
-      echo "warm_up_data"
+      warm_up_data 
   fi
 }
 
@@ -79,7 +79,7 @@ perform_test() {
   echo "" > ${script_dir}/log/temp_log
   for thread in ${threads[@]};do
     echo "`date +%Y-%m-%d` `date +%H:%M:%S` start load $thread=================================" >> $script_dir/log/temp_log
-    ./sysbench --num-threads=${thread} ${same_command} ${expand_command} run >> $script_dir/log/temp_log
+    ./sysbench --num-threads=${thread} ${same_command} ${expand_command} run | tee -a ${script_dir}/log/main_perform_test.log  $script_dir/log/temp_log 
     sleep 5
     if [[ ${run_test_type} == "insert_test" ]];then
       mysql -u${user} -p${passwd} -P${port} -h${host_ip} -e "use ${dbname}; truncate ${insert_table_name};"

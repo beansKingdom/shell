@@ -34,13 +34,11 @@ auto_test() {
         echo "com_code.sh is running..."
         sleep 1
       done
-      # cope the test_log
-      cp ${s_dir}/log/real_time_data ${s_dir}/back_log/${file_name}_rt
+      
+      # cope the test_log and delete blank lines
+      grep -v "#" ${s_dir}/log/real_time_data | tr -s '\n' > ${s_dir}/back_log/${file_name}_rt
       cp ${s_dir}/log/avg_res ${s_dir}/back_log/${file_name}_avg
-
-      # download the test_log to computer
-      sz "${s_dir}/back_log/${file_name}_rt" "${s_dir}/back_log/${file_name}_avg"
-      test $? != 0 && echo "download test_log failed" | tee -a ${s_dir}/log/test_log      
+   
       record_log "finished type ${te_type} ${lua}"
     done
   done
