@@ -1,0 +1,13 @@
+#######mycat
+mycat_host_ip='10.186.17.107'
+mycat_dbname='hly_test'
+mycat_port=8066
+mycat_user='action'
+mycat_passwd='action'
+
+#######mysql
+mysql_port=3308
+mysql_host_ip='10.186.17.101'
+mysql_dbname='test_mysql'
+mysql_user='action'
+mysql_passwd='action'
