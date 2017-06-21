@@ -1,8 +1,10 @@
 #!/bin/bash
 
 scripts_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-. ./mysql_func.sh 
+. ./mysql_func.sh > /dev/null 2>&1
+test $? !=0 && echo "error, can't find mysql_func.sh" && exit 1
 . ./common_share_func.sh
+test $? !=0 && echo "error, can't find common_share_func.sh" && exit 1
 
 port=$1
 mysql_install_dir=$2
