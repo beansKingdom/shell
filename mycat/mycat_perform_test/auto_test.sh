@@ -1,5 +1,6 @@
 #!/bin/bash
 
+. ./mysql_conf
 s_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 python_web_data="/home/helingyun/hly_script/python/web_test/data_photo"
 
@@ -23,18 +24,27 @@ pre_check() {
 
 cope_autotest_avgdata_to_csv() {
   csv_filename=mysql_${lua%.*}_`date +%H%M%S`.csv
-  threadsnum_array=($(cut -f1 ${s_dir}/thread_nums))
   mysql_res_array=($(cut -f1 ${s_dir}/back_log/${temp_mysql_avg_filename}))
   mycat_res_array=($(cut -f1 ${s_dir}/back_log/${temp_mycat_avg_filename}))
 
-  for((i=0; i<${#threadsnum_array[@]}; i++));do
-    echo "${threadsnum_array[i]};${mysql_res_array[i]};${mycat_res_array[i]}" >> ${s_dir}/${csv_filename}
+  if [[ ${#mysql_res_array[@]} != ${mycat_res_array[@]} ]];then
+    echo "error, mysql and mycat result data numbers was different" && exit 1
+  fi
+
+  lines_name="#"
+  for((i=0; i<${#test_type[@]}; i++));do
+    lines_name="${lines_name}${test_type[i]};"
+  done
+  echo "${lines_name%?}" >> ${s_dir}/${csv_filename} 
+
+  for((i=0; i<${#mysql_res_array[@]}; i++));do
+    echo "${mysql_res_array[i]};${mycat_res_array[i]}" >> ${s_dir}/${csv_filename}
   done
 }
 
 cope_csv_to_photo() {
   mv ${s_dir}/${csv_filename} ${python_web_data}
-  python ${python_web_data}/../generate_photo.py ${csv_filename%.*}
+  python ${python_web_data}/../generate_photo.py ${csv_filename} logarithm
 }
 
 auto_test() {
@@ -73,12 +83,8 @@ auto_test() {
 }
 
 main() {
-test_type=('mysql' 'mycat')
-pre_check
-#test_lua=('mycat_select_group_having.lua')
-#test_lua=('mycat_update_same.lua' 'mycat_select.lua' 'mycat_select_in.lua' 'mycat_select_order.lua' 'mycat_select_between.lua' 'mycat_insert.lua')
-test_lua=('mycat_insert.lua')
-auto_test
+  pre_check
+  auto_test
 }
 
 main

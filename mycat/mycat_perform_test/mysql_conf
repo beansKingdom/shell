@@ -11,3 +11,22 @@ mysql_host_ip='10.186.17.101'
 mysql_dbname='test_mysql'
 mysql_user='action'
 mysql_passwd='action'
+
+#######kingshard
+#kingshard_port=9696
+#kingshard_host_ip='10.186.17.107'
+#kingshard_dbname='kingshard'
+#kingshard_user='action'
+#kingshard_passwd='action'
+
+
+###### shard_varibles
+test_type=('mysql' 'mycat')
+#test_lua=('mycat_update_diff.lua' 'mycat_update_same.lua' 'mycat_select.lua' 'mycat_select_in_same.lua' 'mycat_select_order.lua' 'mycat_select_between.lua' 'mycat_insert.lua' 'mycat_select_in_diff.lua' )
+
+test_lua=('mycat_update_diff.lua' 'mycat_update_same.lua')
+update_lua=('mycat_update_same.lua' 'mycat_update_diff.lua')
+select_lua=('mycat_select.lua' 'mycat_select_in_same.lua' 'mycat_select_order.lua' 'mycat_select_between.lua' \
+            'mycat_select_group_having.lua' 'mycat_select_in_diff.lua')
+insert_lua=('mycat_insert.lua')
+

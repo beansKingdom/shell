@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. mysql_conf
+. ./mysql_conf
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ## default config 
@@ -20,9 +20,6 @@ Usage() {
 }
 
 judge_run_test_type() {
-update_lua=('mycat_update_same.lua' 'mycat_update_diff.lua')
-select_lua=('mycat_select.lua' 'mycat_select_in.lua' 'mycat_select_order.lua' 'mycat_select_between.lua' 'mycat_select_group_having.lua')
-insert_lua=('mycat_insert.lua')
 
 for lua in ${update_lua[@]};do
   if [[ ${lua_script_name} == ${lua} ]];then
@@ -61,7 +58,7 @@ config_init() {
 
 warm_up_data() {
   echo "`date +%Y-%m-%d` `date +%H:%M:%S`  start ${run_test_type} warm_up_data =====================================" > ${script_dir}/log/warmup_log
-  ./sysbench --test=../db/${lua_script_name} --num-threads=${warm_up_thread_nums} ${same_command} --max-time=${warm_up_run_time} --mysql-ignore-errors=1062  run >> ${script_dir}/log/warmup_log
+  ./sysbench --test=../db/${lua_script_name} --num-threads=${warm_up_thread_nums} ${same_command} --max-time=${warm_up_run_time}  run >> ${script_dir}/log/warmup_log
   sleep ${warm_up_sleep_time}
 }
 
@@ -79,7 +76,7 @@ perform_test() {
   echo "" > ${script_dir}/log/temp_log
   for thread in ${threads[@]};do
     echo "`date +%Y-%m-%d` `date +%H:%M:%S` start load $thread=================================" >> $script_dir/log/temp_log
-    ./sysbench --num-threads=${thread} ${same_command} ${expand_command} run | tee -a ${script_dir}/log/main_perform_test.log  $script_dir/log/temp_log 
+    ./sysbench --num-threads=${thread} ${same_command} ${expand_command} --max-time=${each_test_runtime} run | tee -a ${script_dir}/log/main_perform_test.log  $script_dir/log/temp_log 
     sleep 5
     if [[ ${run_test_type} == "insert_test" ]];then
       mysql -u${user} -p${passwd} -P${port} -h${host_ip} -e "use ${dbname}; truncate ${insert_table_name};"
@@ -88,7 +85,7 @@ perform_test() {
 }
 
 select_test() {   
-  expand_command=""
+  expand_command="--default-charset=utf8 --oltp-test-mode=nontrx --oltp-skip-trx=on"
   perform_test
   result_deal
 }
@@ -112,14 +109,13 @@ result_deal() {
   else 
     grep "threads:" $script_dir/log/temp_log |awk '{print $10}' | awk -F "," '{print $1}' > $script_dir/log/real_time_data
   fi
-  grep "read/write" $script_dir/log/temp_log | awk '{print $4}' |awk -F "(" '{printf "%s\t",$2}' > $script_dir/log/avg_res
+  grep "read/write" $script_dir/log/temp_log | awk '{print $4}' |awk -F "(" '{print $2}' > $script_dir/log/avg_res
 }
 
 main() {
   judge_run_test_type
   config_init
-  same_command="--mysql-table-engine=innodb --mysql-user=$user --mysql-password=$passwd --max-requests=0 --oltp-tables-count=$table_count --max-time=${each_test_runtime} \
-  --report-interval=1 --test=../db/${lua_script_name} --oltp-table-size=$table_row --mysql-host=$host_ip --mysql-db=$dbname --mysql-ignore-errors=1062 --mysql-port=$port "
+  same_command="--mysql-table-engine=innodb --mysql-user=$user --mysql-password=$passwd --max-requests=0 --oltp-tables-count=$table_count --report-interval=1 --test=../db/${lua_script_name} --oltp-table-size=$table_row --mysql-host=$host_ip --mysql-db=$dbname --mysql-ignore-errors=1062 --mysql-port=$port "
 
   case "$run_test_type" in 
     update_test)
@@ -144,3 +140,4 @@ fi
 lua_script_name=$1
 config_type=$2
 main 
+
