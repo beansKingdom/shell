@@ -64,7 +64,7 @@ get_ftp_tar 2>> /dev/null
 tar -zxvf actiontech-mycat.tar.gz >> /dev/null 2>&1
 test $? != 0 && echo "tar package failed, exit..." && exit 1
 #sed -i 's/MaxDirectMemorySize=2G/MaxDirectMemorySize=10G/g' ${mycat_install_dir}/mycat/conf/wrapper.conf
-echo "wrapper.java.additional.12=-agentpath:/opt/libyjpagent.so=disablestacktelemetry,disableexceptiontelemetry,delay=10000" >> /usr/local/hly/mycat/conf/wrapper.conf
+echo "wrapper.java.additional.12=-agentpath:/opt/libyjpagent.so=disablestacktelemetry,disableexceptiontelemetry,delay=10000" >> ${mycat_install_dir}/mycat/conf/wrapper.conf
 
 print_split
 echo "begin to restart mycat" 
